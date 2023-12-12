@@ -1,0 +1,40 @@
+Pod file 
+******************************
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod5
+    type: webserver
+  name: webserver-1
+spec:
+  containers:
+  - image: nginx
+    name: c1
+
+****************************************
+replica Set defination 
+-------------------------------
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+    matchLabels:
+      type: webserver
+  template:
+    metadata:
+      labels:
+        type: webserver
+    spec:
+      containers:
+      - name: c1
+        image: nginx
+
