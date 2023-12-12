@@ -1,0 +1,568 @@
+
+
+The Process of Creating Images From Containers
+********************************************************************
+At a high level, the process of creating a Docker image from a container involves three steps:
+1.Create a container from an existing image: The first step is to choose a base image you want to customize and run it as a container.
+2.Make changes to the container: Once you have the container up and running, you make changes to it. You could modify files, install additional software or do whatever you need to meet your requirements.
+3.Commit the changes to create a new image: After you’ve made the desired changes to the container, the next step is to commit those changes to create a brand-new Docker image. Now, you can use the new image to spin up new containers with your customizations.
+                                                          
+                                                          command   [   docker container commit -a "sandeep" -m "Changed default c1  welcome message" c1  image1 ]
+                                                          Note that it's considered best practice to use the -a flag to sign the image with an author and include a commit message using the -m flag. 
+
+steps : 
+    1  sudo -i
+    7  sudo apt update -y
+    8  sudo apt install docker.io
+   10  systemctl status docker
+   11  clear
+   12  docker ps
+   13  docker ps -a
+   14  docker ps -l
+   15  docker ps -s
+   16  docker images
+   17  docker run -it --name c1 ubuntu
+           CTL +P+Q
+   18  docker ps
+   19  clear
+   20  docker ps
+   21  docker attach c1   //this command is used to attach with container
+                            run these command inside the container
+                                        1  ls
+    2  mkdir sandeep
+    3  ls
+    4  cd sandeep
+    5  ls
+    6  touch f1 f2 f3 f4
+    7  cat >f1             (write msg and then enter and then CTrl +D)
+    8  cat >f2
+    9  cat >f3
+   10  cd ..
+   11  ls
+   12  mkdir C1
+CTL + P+Q              // command is used to go out from container
+
+   22  clear
+   23  docker images
+   24  docker ps
+   25  docker container commit c1 myimage    // creating the image from c1 containet 
+   26  docker images
+   27  docker run -it --name c2 myimage
+   28  clear
+   29  history
+
+**************************************************************************************************************************************
+
+•Docker can build images automatically by reading the instructions from a Dockerfile.
+•A Docker file is a text document that contains all the commands a user could call on the command line to assemble an image.
+•A Dockerfile is a plain text file that contains instructions for building a Docker container image. 
+•Docker containers are lightweight, portable, and consistent environments that encapsulate an application and its dependencies.
+•The default filename to use for a Dockerfile is Dockerfile, without a file extension.
+• Using the default name allows you to run the docker build command without having to specify additional command flags
+
+
+docker stop c1 c2
+   45  docker rm c1 c2
+   46  docker ps -a
+   47  docker rmi image1
+   48  docker rmi myimage ubuntu  
+   49  docker images
+   50  clewr
+   51  clear
+   52  docker ps -a
+   53  docker images
+   54  clear
+   55  ls
+   56  pwd 
+   57  vi Dockerfile      
+                                                     FROM ubuntu 
+                                                     MAINTAINER yourname
+                                                    
+   58  ls
+   59  cat Dockerfile
+   60  docker build -t image1 .    
+   61  docker images
+   62  clear
+   63  docker inspect image1
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Port Mapping and how to deploye webserver 
+
+Exp 1: 
+
+1.  docker run -it --name webserver -p 80:80 ubuntu
+
+
+                     Run these command inside the container 
+   
+    1   apt update -y
+    2  apt install apache2 -y
+    5  service apache2 start
+    6  clear
+    7  cd /var/www/html
+    8  ls
+    9  echo " Hi... This is sandeep and this is my webserver" >index.html
+
+
+Make sure in secutity group port no 80 is enable .
+
+----------------------------------------------------------------------------------------------------------
+Exp 2: Create a webserver using Dockerfile 
+
+98  vi Dockerfile
+   
+FROM ubuntu:18.04
+MAINTAINER sandeep
+RUN apt-get update -y
+RUN apt-get install apache2 -y
+RUN apt-get  install apache2-utils -y
+EXPOSE 80
+CMD ["apache2ctl","-D","FOREGROUND"]
+
+   99 docker build -t mywebserver .
+  105  docker run -td --name webserver -p 80:80 mywebserver
+  
+  ----------------------------------------------------------------------------------------------------------------------------------------------
+  
+  Push your Docker image to docker hub
+  ************************************
+  create dockerhub account (www.dockerhub.com)
+  107  docker login 
+  108  docker tag mywebserver shyamsandeep28/mywebserver
+  109  clear
+  110  docker images
+  111  docker push shyamsandeep28/mywebserver
+  docker login
+  112  history
+
+
+
+docker run -td --name web -p 80:80 shyamsandeep28/mywebserver
+
+
+
+
+*******************************************************************************************************************
+
+Docker Volume 
+
+
+  . Create a volume : A Docker volume can be created and managed outside of a container by using the following command.
+
+                                                                        $ docker volume create [volume_name]
+     A directory for the volume is automatically created under the /var/lib/docker/volume/path folder by Docker on the host.
+
+2.  List the volumes : To list the volumes, run the following command.
+
+$ docker volume list
+
+3. Mounting Docker Volumes : After creating the Volume, the next step is to mount the Volume to Docker Containers. We will create    
+                                                     a Docker Container with the Ubuntu base Image and mount the data Volume to that Container using 
+                                                     the -v flag.
+
+                             Option 1 : docker run -it -v volumename:/shared-volume --name my-container-01 ubuntu
+                             
+                             
+                         Option 2: docker run --mount source=[volume_name],destination=[path_in_container] [docker_image]
+ clear
+   10  docker volume ls
+   11  docker volume lsit
+   12  docker volume list
+   13  clear
+   14  docker volume create drive1
+   15  docker volume ls
+   17  cd /var/lib/docker/volumes
+   18  ls
+   19  cd drive1
+   20  la
+   21  cd _data
+   22  ls
+   23  mkdir demo
+   24  cd demo
+   25  touch file1
+   26  cat >file1
+   27  cd /
+   28  clear
+   29  docker run -it -v drive1:/sandeep --name c1 ubuntu
+   30  docker ps -a
+   31  docker stop webserver
+   32  docker rm c1 webserver
+   33  docker ps -a
+   34  cd /var/lib/docker
+   35  ls
+   36  cd volumes
+   37  ls
+   38  cd drive1
+   39  cd demo
+   40  ls
+   41  cd _data
+   42  ls
+   43  cd demo
+   44  las
+   45  ls
+   46  cat file2
+   47  cat fil2
+   48  cd /
+   49  clear
+   50  docker run -it -v drive1:/conatiner1 --name c1  ubuntu
+   51  docker run -it -v drive1:/conatiner2 --name c2  ubuntu
+   52  docker ps
+   53  docker attach c1
+   54  docker attach c2
+   55  cd /var/lib/docker/volumes
+   56* 
+   57  cd //
+   58  cd /
+   59  docker run -it -v drive2:/demo --name c3  ubuntu
+   60  cd /var/lib/docker/volumes
+
+
+*****************************
+Bind Mount 
+
+*******************************cd /
+sudo -i
+mkdir mybind
+cd mybind
+cat >file1
+enter any msg
+press CTR+d
+docker run -it --name c11 --mount type=bind,source="/root/mybind",target="/demo" ubuntu
+************************************************************************************************
+
+
+docker Networking
+Network Drivers
+
+1.Bridge: If you build a container without specifying the kind of driver, the container will only be created in the bridge network, which is the default network. 
+2.Host: Containers will not have any IP address they will be directly created in the system network which will remove isolation between the docker host and containers. 
+3.None: IP addresses won’t be assigned to containers. These containments are not accessible to us from the outside or from any other container.
+*******************************
+1.Docker network : The Docker Network command is the main command that would allow you to create, manage, and configure your Docker Network.
+2.docker network ls : To list all the Docker Networks, you can use the list command.
+3.Docker Network Create command : With the help of the “Create” command, we can create our own docker network and can deploy our containers in it.   
+                                                         docker network create --driver <driver-name> <bridge-name>
+4.Using the Docker Network Connect command : Using the “Connect” command, you can connect a running Docker Container to an existing Network.                
+                                                       docker network connect <network-name> <container-name or id>
+5.Using the Docker Network Disconnect command : The disconnect command can be used to remove a Container from the Network.              
+                                                      docker network disconnect <network-name> <container-name or id>
+
+
+docker network ls
+   24  docker innspect bridge
+   25  docker inspect bridge
+   26  docker ps -a
+   27  clear
+   28  docker network create mynetwork
+   29  docker network ls
+   30  docker inspect mynetwork
+   31  docker ps
+   32  docker inspect c1
+   33  docker network connect mynetwork c1
+   34  docker network disconnect bridge c1
+   35  docker inspect c1
+   36  docker inspect mynetwork
+   37  history
+
+*****************************************************************
+Jenkins 
+
+docker run -td --name jenkins1 -p 8080:8080 jenkins/jenkins
+docker exec -it jenkins1 /bin/bash    (this command will use to go inside container)
+cat /var/jenkins_home/secrets/initialAdminPassword
+
+********************************************************************************************************************************************************************************************
+Kubernetes 
+
+
+step 1 : run on master 
+  sudo -i
+  hostnamectl set-hostname master
+  bash
+  
+ step 2 : run on worker 1
+  sudo -i
+  hostnamectl set-hostname worker1
+  bash
+  
+ step 3 : run on worker 2  
+ sudo -i
+ hostnamectl set-hostname worker2
+ bash
+ ****************************************************************************************************************************************************************
+ 
+ 
+ 
+ ### Installation Script  ################
+ create scriptfile
+ 
+  vi script.sh
+ 
+ ===========================================================================
+#!/bin/bash 
+sudo apt update -y
+sudo apt install apt-transport-https ca-certificates curl software-properties-common  -y
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+sudo apt update -y
+apt-cache policy docker-ce -y
+sudo apt install docker-ce -y
+wget -q -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo deb http://apt.kubernetes.io/ kubernetes-xenial main | sudo tee /etc/apt/sources.list.d/kubernetes.list
+apt update -y
+apt install kubelet=1.21.1-00 kubeadm=1.21.1-00 kubectl=1.21.1-00 -y
+sysctl net.bridge.bridge-nf-call-iptables=1
+=================================================================================================
+################
+ 
+sh script.sh  // to run script -- RUN on all machine
+
+*************************************************************************************************
+
+#RUN only on master
+
+kubeadm init --pod-network-cidr=192.168.0.0/16 >> mycommand.txt 
+
+cat mycommand.txt
+---------------
+
+
+  execute on master 
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  
+  
+  execute only on master 
+  
+  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+
+
+
+kubectl get nodes
+
+****************************************************************************************************************
+
+kubectl get pods --namespace=kube-system
+
+
+     8. kubectl get nodes
+    9  kubectl get pods -o wide
+   10  kubectl get namespace
+   11  kubectl get pods --namespace=kube-system
+   12  clear
+   13  kubectl get nodes
+   14  kubectl run pod1 --image nginx
+   15  kubectl get pod
+   16  kubectl get pod -o wide
+   17  kubectl run pod2 --image nginx
+   18  kubectl get pod -o wide
+   19  clear
+   20  kubectl describe pod pod1
+   21  clear
+   22  kubectl run pod3 --image nginx --dry-run=client -o yaml >demo.yaml
+   23  ls
+   24  vi demo.yaml
+   25  kubectl apply -f demo.yaml
+   26  kubectl get pods
+   27  kubectl describe pod pod3
+   28  clear
+   29  kubectl get pods -A -o wide
+   30  history
+   *******************************************************************************
+   
+   Set the label in which worker you want to deploye pod 
+ kubectl label node worker1 name=worker1
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod6
+  name: pod6
+spec:
+  nodeSelector:
+    name: worker1
+  containers:
+  - image: nginx
+    name: c1
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+kubectl apply/create -f filename.yaml
+
+
+Replication Controler 
+************************************************************************************
+    68 kubectl delete pod pod-name
+   69  kubectl get pods
+   72  vi rc.yaml
+
+***************************yaml file code*************************
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+  template:
+    metadata:
+      labels:
+        type: webserver
+    spec:
+      containers:
+      - name: c1
+        image: nginx
+   ************************************************************************      
+   73  kubectl apply -f rc.yaml
+   74  kubectl get replicationcontroller
+   75  kubectl get pods
+   76  kubectl delete pod frontend-22gps   
+   77  kubectl get pods
+   78  kubectl scale replicationcontroller frontend --replicas=6
+   79  kubectl get pods
+   80  kubectl scale replicationcontroller frontend --replicas=2
+   81  kubectl get pods
+   82  kubectl scale replicationcontroller frontend --replicas=10
+   83  kubectl get pods
+   84  kubectl scale replicationcontroller frontend --replicas=2
+   85  kubectl get pods
+   86  clear
+   87  kubectl get pods
+   88  kubectl delete frontend-zf58r
+   89  kubectl delete pod frontend-zf58r
+   90  kubectl get pods
+   91  history
+
+*************************************************************************************
+Replica set
+kubectl delete  replicationcontroller frountend
+  102  kubectl delete replicationcontroller frontend
+  103  kubectl get pods
+  104  vi pod.yaml
+        
+ **************************       new pod defination ***************************************
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod5
+    type: webserver
+  name: webserver-2
+spec:
+  containers:
+  - image: nginx
+    name: c1
+    
+ ********************************************   
+  105  kubectl apply -f pod.yaml
+  106  kubectl get pods
+  107  kubectl describe pod pod1
+  108  vi pod.yaml
+  
+  ****************************************
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod5
+    type: webserver
+  name: webserver-1
+spec:
+  containers:
+  - image: nginx
+    name: c1
+*************************************************    
+  109  kubectl apply -f pod.yaml
+  110  kubectl get pods
+  111  kubectl get pods -o wide
+  112  kubectl get replicaset
+  113  vi rs.yaml
+  **********************************
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+    matchLabels:
+      type: webserver
+  template:
+    metadata:
+      labels:
+        type: webserver
+    spec:
+      containers:
+      - name: c1
+        image: nginx
+  **********************************************
+  
+  114  clear
+  115  kubectl get pods
+  116  kubectl apply -g rs.yaml
+  117  kubectl apply -f rs.yaml
+  118  kubectl get pods
+  119  kubectl delete pod pod1
+  120  kubectl get pods
+  121  kubectl delete pod pod2
+  122  kubectl get pods
+  123  kubectl scale replicaset frontend --replicas=6
+  124  kubectl get pods
+  125  kubectl scale replicaset frontend --replicas=2
+  126  kubectl get pods
+  127  history
+
+
+-------------------------------------------Deployement------------------------------------------
+
+  146  kubectl create deploy mydeploy --image nginx --replicas=4
+  147  kubectl get deploy
+  148  kubectl get pods
+  149  kubectl describe deploy mydeploy
+  150  kubectl set image deploy mydeploy  nginx=ubuntu
+  151  kubectl describe deploy mydeploy
+  152  kubectl get pods
+  153  kubectl rollout undo deploy mydeploy
+  154  kubectl describe deploy mydeploy
+  155  kubectl get pods
+  156  history
+
+
+************************************
+
+
+  160  kubectl create namespace demo
+  161  kubectl get ns
+  162  kubectl get pods
+  163  clear
+  164  kubectl config set-context --current --namespace=demo
+  165  kubectl get pods
+  166  kubectl run pod1 --image nginx
+  167  kubbectl get pods -o wide
+  168  kubectl get pods -o wide
+  169  kubectl get pods -A -o wide
+
+
+
+
+
+
