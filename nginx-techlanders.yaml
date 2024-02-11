@@ -20,6 +20,8 @@ spec:
       - name: nginx
         image: nginx
 
+        // kunectl apply -f filename.yaml
+
 
 ##### Ngnix-Service.yaml
 
@@ -36,6 +38,9 @@ spec:
     port: 80
     targetPort: 80
 
+   // kunectl apply -f Ngnix-Service.yaml
 
+   kubectl get svc
+   
 
 
