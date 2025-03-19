@@ -1,0 +1,100 @@
+What is a Kubernetes ConfigMap?
+A ConfigMap in Kubernetes is an API object used to store configuration data in key-value pairs. It allows you to decouple application configurations from the container images, making them more portable and easier to manage.
+
+Why Use ConfigMap?
+Decouples Configurations: Avoids hardcoding configurations inside the container image.
+Easy Updates: Can update configurations without rebuilding images.
+Reusability: Same ConfigMap can be used across multiple pods.
+==============================================================================
+
+Hands-on Lab: Creating an Nginx Pod (Before and After ConfigMap)
+Step 1: Create an Nginx Pod Without ConfigMap
+First, let's create a simple Nginx pod that serves a static webpage without using ConfigMap.
+
+Create a pod definition (nginx-pod.yaml):
+-------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+--------------------------------------------
+
+kubectl logs nginx-pod    // verify log
+-----------------------------------------------------------------------------------
+
+after configmap 
+===================================
+
+Step 2: Create a ConfigMap
+Now, let’s create a ConfigMap to store a custom nginx.conf file.
+
+Create a ConfigMap Manifest (nginx-configmap.yaml)
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {}
+    http {
+        server {
+            listen 80;
+            location / {
+                return 200 'Hello from ConfigMap!';
+                add_header Content-Type text/plain;
+            }
+        }
+    }
+================================================================
+kubectl apply -f nginx-configmap.yaml
+kubectl get configmap nginx-config -o yaml
+****************************************************
+
+Step 3: Use ConfigMap in an Nginx Pod
+Now, modify the Nginx pod to use the ConfigMap as a volume.
+
+Update the Pod Definition (nginx-pod-with-configmap.yaml)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-configmap
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+  volumes:
+    - name: config-volume
+      configMap:
+        name: nginx-config
+=============================================
+
+kubectl apply -f nginx-pod-with-configmap.yaml
+kubectl get pods
+kubectl logs nginx-pod-configmap
+===================================================
+
+Step 4: Testing
+Before ConfigMap:
+
+Default Nginx page is served.
+No custom message.
+After ConfigMap:
+
+Access Nginx pod and check the custom response.
+
+kubectl port-forward nginx-pod-configmap 8080:80
+curl http://localhost:8080
+
